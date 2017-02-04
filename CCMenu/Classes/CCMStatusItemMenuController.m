@@ -28,12 +28,12 @@
 
 - (void)awakeFromNib
 {
-	statusItem = [[[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength] retain];	
+	statusItem = [[[NSStatusBar systemStatusBar] statusItemWithLength:NSVariableStatusItemLength] retain];
     [statusItem setImage:[imageFactory imageForUnavailableServer]];
 	[statusItem setHighlightMode:YES];
 	[statusItem setMenu:statusMenu];
-    
-    [[NSNotificationCenter defaultCenter] 
+
+    [[NSNotificationCenter defaultCenter]
      addObserver:self selector:@selector(displayProjects:) name:CCMProjectStatusUpdateNotification object:nil];
 }
 
@@ -66,12 +66,12 @@
     NSSortDescriptor *timing = [NSSortDescriptor sortDescriptorWithKey:nil ascending:YES comparator:^(id obj1, id obj2) {
         // custom comparator using nil key path to work around sorting nil values
         // http://stackoverflow.com/questions/2021213/nssortdescriptor-and-nil-values
-        // http://www.cocoabuilder.com/archive/cocoa/283958-nssortdescriptor-and-block.html        
+        // http://www.cocoabuilder.com/archive/cocoa/283958-nssortdescriptor-and-block.html
         NSDate *val1 = [[obj1 getWithDefault:[NSDate distantFuture]] estimatedBuildCompleteTime];
         NSDate *val2 = [[obj2 getWithDefault:[NSDate distantFuture]] estimatedBuildCompleteTime];
         return [val1 compare:val2];
     }];
-    
+
     NSArray *descriptors = [NSArray arrayWithObjects:hasStatus, building, status, timing, nil];
     NSArray *sortedProjectList = [projectList sortedArrayUsingDescriptors:descriptors];
     return [sortedProjectList firstObject];
@@ -83,7 +83,7 @@
     {
         [item setImage:[imageFactory imageForUnavailableServer]];
 		[item setTitle:@""];
-    } 
+    }
     else if([[project status] isBuilding] == NO)
     {
         [item setImage:[imageFactory imageForStatus:[project status]]];
@@ -208,7 +208,7 @@
 {
     NSArray *projectList = [serverMonitor projects];
 	[self setupMenu:[statusItem menu] forProjects:projectList];
-    
+
     CCMProject *project = [self projectForStatusBar:projectList];
     [self setupStatusItem:statusItem forProject:project fromList:projectList];
 
@@ -224,14 +224,15 @@
 - (IBAction)openProject:(id)sender
 {
     CCMProject *project = [sender representedObject];
-	if([[project status] webUrl] != nil)
+    if([[project status] webUrl] != nil)
     {
-        [[NSWorkspace sharedWorkspace] openURLString:[[project status] webUrl]];
+        NSString *url = [NSString stringWithFormat:@"%@/lastBuild/console", [[project status] webUrl]];
+        [[NSWorkspace sharedWorkspace] openURLString:url];
     }
     else
 	{
 		NSAlert *alert = [[[NSAlert alloc] init] autorelease];
-		if([project statusError] != nil) 
+		if([project statusError] != nil)
 		{
 			[alert setMessageText:NSLocalizedString(@"An error occured when retrieving the project status", "Alert message when an error occured talking to the server.")];
 			[alert setInformativeText:[project statusError]];
